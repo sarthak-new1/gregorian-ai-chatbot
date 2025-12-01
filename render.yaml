@@ -1,0 +1,22 @@
+# render.yaml
+services:
+  - type: web
+    name: georgian-ai-chatbot
+    runtime: python
+    env: python
+    plan: free                       # or standard, depending on your needs
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PINECONE_API_KEY
+        sync: false   # set in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false   # set in Render dashboard
+      # Optional: if you still want .env-style loading you can keep python-dotenv,
+      # but usually env vars from Render are enough.
+
+    autoDeploy: true
+    healthCheckPath: /
