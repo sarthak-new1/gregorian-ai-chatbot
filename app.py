@@ -14,6 +14,12 @@ if not PINECONE_API_KEY or not OPENAI_API_KEY:
 # Import AFTER env vars so agent.py sees keys
 from agent import get_answer  # your LangChain + Pinecone agent
 
+# --- Background image URL ---
+BACKGROUND_IMAGE_URL = (
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/"
+    "The_Supreme_Court_of_Georgia_is_located_at_the_Nathan_Deal_Judicial_Center_in_Atlanta.jpg/"
+    "640px-The_Supreme_Court_of_Georgia_is_located_at_the_Nathan_Deal_Judicial_Center_in_Atlanta.jpg"
+)
 
 # --- Page config ---
 st.set_page_config(
@@ -21,85 +27,98 @@ st.set_page_config(
     layout="centered",
 )
 
-# --- Custom CSS for professional UI ---
+# --- Custom CSS for professional UI with background image ---
 st.markdown(
-    """
+    f"""
 <style>
-/* Overall app background */
-[data-testid="stAppViewContainer"] {
-    background: radial-gradient(circle at top left, #e0e9ff 0, #f7f7ff 40%, #ffffff 100%);
-}
+/* Overall app background: image + dark overlay for contrast */
+[data-testid="stAppViewContainer"] {{
+    background-image:
+        linear-gradient(135deg, rgba(8, 14, 29, 0.92), rgba(15, 23, 42, 0.92)),
+        url("{BACKGROUND_IMAGE_URL}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}}
 
-/* Center content and limit width */
-.block-container {
+[data-testid="stAppViewContainer"] * {{
+    color: #e5e7eb;
+}}
+
+.block-container {{
     max-width: 900px;
     padding-top: 2.5rem;
-    padding-bottom: 2rem;
-}
+    padding-bottom: 2.5rem;
+}}
+
 
 /* Hero header */
-.hero-block {
+.hero-block {{
     text-align: center;
-    margin-bottom: 1.8rem;
-}
+    margin-bottom: 1.6rem;
+}}
 
-/* Title: formal, legal-style serif font with deep navy color */
-.main-title {
+.main-title {{
     font-family: "Georgia", "Times New Roman", serif;
-    font-size: 2.7rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #0B2540;         /* <- updated professional navy */
+    color: #f9fafb;
     letter-spacing: 0.03em;
-    margin-bottom: 0.4rem;
-}
+    margin-bottom: 0.3rem;
+}}
 
-/* Subtitle */
-.subheader {
+.subheader {{
     font-family: "Georgia", "Times New Roman", serif;
     font-size: 1rem;
-    color: #4b5563;
-    margin-bottom: 0.3rem;
-}
+    color: #d1d5db;
+    margin-bottom: 0.4rem;
+}}
 
-.hero-helper {
+.hero-helper {{
     font-size: 0.9rem;
-    color: #6b7280;
+    color: #9ca3af;
     max-width: 520px;
     margin: 0 auto;
-}
+}}
 
-/* ... keep the rest of your CSS as-is ... */
 
-/* Scrollable chat area */
-.chat-scroll {
+.chat-scroll {{
     max-height: 65vh;
     min-height: 40vh;
     overflow-y: auto;
-    padding-right: 0.25rem;
-    margin-bottom: 0.5rem;
+    padding-right: 0.35rem;
+    margin-bottom: 0.2rem;
     border-radius: 16px;
-}
+}}
 
 /* Custom scrollbar */
-.chat-scroll::-webkit-scrollbar {
+.chat-scroll::-webkit-scrollbar {{
     width: 6px;
-}
-.chat-scroll::-webkit-scrollbar-track {
+}}
+.chat-scroll::-webkit-scrollbar-track {{
     background: transparent;
-}
-.chat-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5f5;
+}}
+.chat-scroll::-webkit-scrollbar-thumb {{
+    background: #4b5563;
     border-radius: 999px;
-}
+}}
 
-/* Chat message spacing */
-[data-testid="stChatMessage"] {
-    padding-top: 0.1rem;
-    padding-bottom: 0.1rem;
-}
+/* Chat messages */
+[data-testid="stChatMessage"] {{
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+}}
+
+[data-testid="stChatMessage"] > div {{
+    background: rgba(17, 24, 39, 0.95) !important;
+    border-radius: 16px !important;
+    padding: 0.7rem 0.9rem !important;
+    border: 1px solid rgba(75, 85, 99, 0.6);
+}}
 
 /* Buttons */
-.stButton > button {
+.stButton > button {{
     border-radius: 999px;
     padding: 0.4rem 1rem;
     font-size: 0.9rem;
@@ -107,38 +126,49 @@ st.markdown(
     background: #2563eb;
     color: #ffffff;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
-}
-.stButton > button:hover {
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}}
+.stButton > button:hover {{
     background: #1d4ed8;
-}
+}}
 
 /* Rounded input */
-[data-testid="stTextInput"] input {
+[data-testid="stTextInput"] input {{
     border-radius: 999px;
-    border: 1px solid #cbd5f5;
-}
+    border: 1px solid rgba(148, 163, 184, 0.7);
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+}}
+[data-testid="stTextInput"] input::placeholder {{
+    color: #6b7280;
+}}
 
 /* Input row */
-.input-row {
+.input-row {{
     padding-top: 0.6rem;
-    border-top: 1px solid #e5e7eb;
-}
+    margin-top: 0.4rem;
+    border-top: 1px solid rgba(55, 65, 81, 0.8);
+}}
 
 /* Footer */
-.footer {
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-top: 0.6rem;
+.footer {{
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.75rem;
     text-align: center;
-}
+}}
 
 /* Helper text when chat is empty */
-.helper-text {
+.helper-text {{
     text-align: center;
     color: #9ca3af;
     margin-top: 1rem;
-}
+}}
+
+/* Remove default Streamlit header/menu spacing and background */
+[data-testid="stHeader"], [data-testid="stToolbar"] {{
+    background: transparent;
+}}
 </style>
 """,
     unsafe_allow_html=True,
@@ -158,7 +188,7 @@ TEXTS = {
         "title": "Georgian AI Chatbot",
         "subtitle": "სპეციალიზირებული Georgian Legal AI ასისტენტი.",
         "hero_helper": " ",
-        "send": "გაგზავნა",
+        "send": "გაგზავნა", 
         "placeholder": "შეიყვანეთ თქვენი კითხვა ან სამართლებრივი სიტუაცია...",
         "helper": "დაიწყეთ საუბარი Georgian AI ჩათბოტთან ქვემოთ მოცემული ველიდან.",
         "input_label": "შეტყობინება",
@@ -169,6 +199,8 @@ TEXTS = {
 }
 
 t = TEXTS[lang]
+
+
 
 # --- Header (centered hero section) ---
 st.markdown(
@@ -185,7 +217,7 @@ st.markdown(
 if not PINECONE_API_KEY or not OPENAI_API_KEY:
     st.warning(t["missing_keys"])
 
-# --- Scrollable chat area ---
+
 chat_scroll = st.container()
 with chat_scroll:
     st.markdown("<div class='chat-scroll'>", unsafe_allow_html=True)
@@ -217,13 +249,14 @@ with st.form(key="chat_form", clear_on_submit=True):
     with input_col2:
         submitted = st.form_submit_button(t["send"])
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)  # close input-row
 
 # Footer
 st.markdown(
-    "<div class='footer'>Georgian Legal AI · Powered by Pinecone & OpenAI</div>",
+    "<div class='footer'> </div>",
     unsafe_allow_html=True,
 )
+
 
 # --- Submit logic ---
 if submitted and user_input.strip():
